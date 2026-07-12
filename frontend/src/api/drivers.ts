@@ -13,6 +13,12 @@ export const getDrivers = async (skip: number = 0, limit: number = 10, status?: 
   return response.json();
 };
 
+export const getDriverById = async (driver_id: string) => {
+  const response = await fetchWithAuth(`/drivers/${driver_id}`);
+  if (!response.ok) throw new Error("Failed to fetch driver details");
+  return response.json();
+};
+
 export const getAvailableDrivers = async () => {
   const response = await fetchWithAuth(`/drivers/dropdown`);
   if (!response.ok) throw new Error("Failed to fetch available drivers");

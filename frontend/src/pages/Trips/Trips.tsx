@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
-import { getTrips, createTrip } from '../../api/trips';
-import { getAvailableDrivers } from '../../api/drivers';
-import { getAvailableVehicles } from '../../api/vehicles';
+import { getTrips, createTrip, getTripById } from '../../api/trips';
+import { getAvailableDrivers, getDriverById } from '../../api/drivers';
+import { getAvailableVehicles, getVehicleById } from '../../api/vehicles';
 import SearchableSelect from '../../components/SearchableSelect/SearchableSelect';
 import ExpandableSearch from '../../components/ExpandableSearch/ExpandableSearch';
 import './Trips.css';
@@ -13,6 +13,13 @@ const Trips = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // Details Modal state
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
+  const [selectedTripDetails, setSelectedTripDetails] = useState<any>(null);
+  const [selectedDriverDetails, setSelectedDriverDetails] = useState<any>(null);
+  const [selectedVehicleDetails, setSelectedVehicleDetails] = useState<any>(null);
+  const [detailsLoading, setDetailsLoading] = useState(false);
   
   // Modal state
   const [showModal, setShowModal] = useState(false);
@@ -98,6 +105,31 @@ const Trips = () => {
     }
   };
 
+  const handleRowClick = async (trip: any) => {
+    setDetailsModalOpen(true);
+    setDetailsLoading(true);
+    setSelectedTripDetails(null);
+    setSelectedDriverDetails(null);
+    setSelectedVehicleDetails(null);
+    
+    try {
+      const tripDetails = await getTripById(trip.id);
+      setSelectedTripDetails(tripDetails);
+      
+      const [driverDetails, vehicleDetails] = await Promise.all([
+        getDriverById(tripDetails.driver_id),
+        getVehicleById(tripDetails.vehicle_id)
+      ]);
+      
+      setSelectedDriverDetails(driverDetails);
+      setSelectedVehicleDetails(vehicleDetails);
+    } catch (err) {
+      console.error("Failed to load details", err);
+    } finally {
+      setDetailsLoading(false);
+    }
+  };
+
   return (
     <div className="trips-page">
       <div className="page-header">
@@ -155,7 +187,7 @@ const Trips = () => {
               </thead>
               <tbody>
                 {filteredTrips.map((t) => (
-                  <tr key={t.id}>
+                  <tr key={t.id} onClick={() => handleRowClick(t)} style={{ cursor: 'pointer' }}>
                     <td>
                       <strong>{t.source}</strong> &rarr; <strong>{t.destination}</strong>
                     </td>
@@ -253,6 +285,61 @@ const Trips = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {detailsModalOpen && (
+        <div className="modal-overlay" onClick={() => setDetailsModalOpen(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Trip Details</h2>
+              <button className="close-btn" onClick={() => setDetailsModalOpen(false)}><X size={20} /></button>
+            </div>
+            {detailsLoading ? (
+              <div style={{ padding: '2rem', textAlign: 'center' }}>Loading details...</div>
+            ) : selectedTripDetails && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginTop: '1rem' }}>
+                <div className="details-card" style={{ padding: '1rem', background: 'var(--surface-color)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                  <h3 style={{ marginTop: 0, marginBottom: '0.5rem', color: 'var(--primary-color)' }}>Trip Info</h3>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                    <p style={{ margin: 0 }}><strong>Route:</strong> {selectedTripDetails.source} &rarr; {selectedTripDetails.destination}</p>
+                    <p style={{ margin: 0 }}><strong>Status:</strong> {selectedTripDetails.status}</p>
+                    <p style={{ margin: 0 }}><strong>Cargo:</strong> {selectedTripDetails.cargo_weight} kg</p>
+                    <p style={{ margin: 0 }}><strong>Distance:</strong> {selectedTripDetails.planned_distance} km</p>
+                    <p style={{ margin: 0 }}><strong>Duration:</strong> {selectedTripDetails.estimated_duration_hours} hrs</p>
+                    {selectedTripDetails.actual_distance && <p style={{ margin: 0 }}><strong>Actual Distance:</strong> {selectedTripDetails.actual_distance} km</p>}
+                    {selectedTripDetails.total_cost && <p style={{ margin: 0 }}><strong>Total Cost:</strong> ${selectedTripDetails.total_cost}</p>}
+                  </div>
+                  {selectedTripDetails.completion_notes && <p style={{ marginTop: '0.5rem', marginBottom: 0 }}><strong>Notes:</strong> {selectedTripDetails.completion_notes}</p>}
+                </div>
+                
+                {selectedDriverDetails && (
+                  <div className="details-card" style={{ padding: '1rem', background: 'var(--surface-color)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                    <h3 style={{ marginTop: 0, marginBottom: '0.5rem', color: 'var(--primary-color)' }}>Driver Info</h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                      <p style={{ margin: 0 }}><strong>Name:</strong> {selectedDriverDetails.name}</p>
+                      <p style={{ margin: 0 }}><strong>License:</strong> {selectedDriverDetails.license_number}</p>
+                      <p style={{ margin: 0 }}><strong>Phone:</strong> {selectedDriverDetails.contact_number}</p>
+                    </div>
+                  </div>
+                )}
+                
+                {selectedVehicleDetails && (
+                  <div className="details-card" style={{ padding: '1rem', background: 'var(--surface-color)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                    <h3 style={{ marginTop: 0, marginBottom: '0.5rem', color: 'var(--primary-color)' }}>Vehicle Info</h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                      <p style={{ margin: 0 }}><strong>Model:</strong> {selectedVehicleDetails.model}</p>
+                      <p style={{ margin: 0 }}><strong>Registration:</strong> {selectedVehicleDetails.registration_number}</p>
+                      <p style={{ margin: 0 }}><strong>Type:</strong> {selectedVehicleDetails.type}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+            <div className="modal-actions" style={{ marginTop: '2rem' }}>
+              <button type="button" className="btn-secondary" onClick={() => setDetailsModalOpen(false)}>Close</button>
+            </div>
           </div>
         </div>
       )}

@@ -13,6 +13,12 @@ export const getTrips = async (skip: number = 0, limit: number = 10, status_filt
   return response.json();
 };
 
+export const getTripById = async (trip_id: string) => {
+  const response = await fetchWithAuth(`/trips/${trip_id}`);
+  if (!response.ok) throw new Error("Failed to fetch trip details");
+  return response.json();
+};
+
 export const createTrip = async (payload: any) => {
   const response = await fetchWithAuth(`/trips/`, {
     method: 'POST',

@@ -13,6 +13,12 @@ export const getVehicles = async (skip: number = 0, limit: number = 10, status?:
   return response.json();
 };
 
+export const getVehicleById = async (vehicle_id: string) => {
+  const response = await fetchWithAuth(`/vehicles/${vehicle_id}`);
+  if (!response.ok) throw new Error("Failed to fetch vehicle details");
+  return response.json();
+};
+
 export const getAvailableVehicles = async () => {
   const response = await fetchWithAuth(`/vehicles/dropdown`);
   if (!response.ok) throw new Error("Failed to fetch available vehicles");
