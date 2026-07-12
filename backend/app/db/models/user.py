@@ -1,0 +1,24 @@
+import enum
+import uuid
+from sqlalchemy import Column, String, Boolean, Enum, DateTime
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.sql import func
+from app.db.database import Base
+
+class RoleEnum(str, enum.Enum):
+    FLEET_MANAGER = "FLEET_MANAGER"
+    DRIVER = "DRIVER"
+    SAFETY_OFFICER = "SAFETY_OFFICER"
+    FINANCIAL_ANALYST = "FINANCIAL_ANALYST"
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name = Column(String, nullable=False)
+    email = Column(String, unique=True, index=True, nullable=False)
+    password_hash = Column(String, nullable=False)
+    role = Column(Enum(RoleEnum), nullable=False)
+    
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now(), server_default=func.now())

@@ -1,0 +1,60 @@
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+from fastapi import HTTPException, status, BackgroundTasks
+from app.db.models.driver import Driver, DriverStatusEnum
+from app.modules.drivers.schemas import DriverCreate, DriverUpdate, DriverStatusUpdate
+from app.services.dashboard_service import recalculate_driver_stats
+
+async def get_drivers(db: AsyncSession, skip: int = 0, limit: int = 10, status_filter: str = None):
+    query = select(Driver)
+    if status_filter:
+        query = query.where(Driver.status == status_filter)
+        
+    query = query.offset(skip).limit(limit)
+    result = await db.execute(query)
+    return result.scalars().all()
+
+async def get_driver_by_id(db: AsyncSession, driver_id: str):
+    query = select(Driver).where(Driver.id == driver_id)
+    result = await db.execute(query)
+    driver = result.scalars().first()
+    if not driver:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Driver not found")
+    return driver
+
+async def create_driver(db: AsyncSession, driver_in: DriverCreate, background_tasks: BackgroundTasks):
+    # Check if license number already exists
+    query = select(Driver).where(Driver.license_number == driver_in.license_number)
+    result = await db.execute(query)
+    if result.scalars().first():
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="License number already registered")
+        
+    new_driver = Driver(**driver_in.model_dump())
+    db.add(new_driver)
+    await db.commit()
+    await db.refresh(new_driver)
+    background_tasks.add_task(recalculate_driver_stats)
+    return new_driver
+
+async def update_driver(db: AsyncSession, driver_id: str, driver_update: DriverUpdate):
+    driver = await get_driver_by_id(db, driver_id)
+    
+    update_data = driver_update.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(driver, key, value)
+        
+    db.add(driver)
+    await db.commit()
+    await db.refresh(driver)
+    return driver
+
+async def update_driver_status(db: AsyncSession, driver_id: str, status_update: DriverStatusUpdate, background_tasks: BackgroundTasks):
+    driver = await get_driver_by_id(db, driver_id)
+    
+    driver.status = status_update.status
+    db.add(driver)
+    await db.commit()
+    await db.refresh(driver)
+    
+    background_tasks.add_task(recalculate_driver_stats)
+    return driver
