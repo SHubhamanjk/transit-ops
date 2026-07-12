@@ -147,8 +147,8 @@ const Maintenance = () => {
                   <th>Description</th>
                   <th>Status</th>
                   <th>Start Date</th>
-                  <th>Cost (Est)</th>
-                  <th>Final Cost</th>
+                  <th>Est. Time (hrs)</th>
+                  <th>Cost</th>
                 </tr>
               </thead>
               <tbody>
@@ -161,8 +161,8 @@ const Maintenance = () => {
                       </span>
                     </td>
                     <td>{new Date(log.start_date).toLocaleDateString()}</td>
-                    <td>${log.estimated_cost.toLocaleString()}</td>
-                    <td>{log.final_cost ? `$${log.final_cost.toLocaleString()}` : '-'}</td>
+                    <td>{log.estimated_duration_hours}</td>
+                    <td>{log.total_cost != null ? `$${Number(log.total_cost).toLocaleString()}` : '-'}</td>
                   </tr>
                 ))}
               </tbody>
