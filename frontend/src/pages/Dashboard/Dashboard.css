@@ -1,0 +1,137 @@
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.dashboard-filters {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.filter-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  letter-spacing: 0.05em;
+}
+
+.filter-select {
+  background-color: var(--bg-dark);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 0.5rem 2rem 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  appearance: none;
+  background-image: url('data:image/svg+xml;utf8,<svg fill="%239ca3af" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+  background-repeat: no-repeat;
+  background-position-x: 100%;
+  background-position-y: 50%;
+}
+
+.summary-cards {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.summary-card {
+  flex: 1;
+  min-width: 150px;
+  background-color: var(--bg-dark);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 1rem;
+  border-left-width: 4px;
+}
+
+.summary-card.border-blue { border-left-color: var(--accent-blue); }
+.summary-card.border-green { border-left-color: var(--status-success); }
+.summary-card.border-orange { border-left-color: var(--status-warning); }
+
+.card-label {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+.card-value {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+}
+
+.section-title {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  letter-spacing: 0.05em;
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+/* Data Table */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-color);
+  letter-spacing: 0.05em;
+}
+
+.data-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.875rem;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.bg-blue { background-color: var(--status-info); color: white; }
+.bg-green { background-color: var(--status-success); color: white; }
+.bg-orange { background-color: var(--status-warning); color: white; }
+.bg-red { background-color: var(--status-danger); color: white; }
+.bg-neutral { background-color: var(--status-neutral); color: white; }
+
+/* Vehicle Status Bars */
+.status-bar-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.status-bar-label {
+  width: 80px;
+  font-size: 0.875rem;
+}
+
+.status-bar-track {
+  flex: 1;
+  height: 12px;
+  background-color: var(--bg-panel);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.status-bar-fill {
+  height: 100%;
+}

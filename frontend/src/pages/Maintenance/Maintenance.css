@@ -1,0 +1,77 @@
+.maintenance-container {
+  display: grid;
+  grid-template-columns: 350px 1fr;
+  gap: 3rem;
+  padding: 0 1rem;
+}
+
+.maintenance-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.w-full {
+  width: 100%;
+}
+
+.mt-4 {
+  margin-top: 1rem;
+}
+
+.mt-6 {
+  margin-top: 1.5rem;
+}
+
+.maintenance-legend {
+  font-size: 0.875rem;
+}
+
+.legend-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.text-green {
+  color: var(--status-success);
+}
+
+.text-amber {
+  color: var(--accent-amber);
+}
+
+.legend-arrow-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  margin: 0 1rem;
+  position: relative;
+}
+
+.legend-arrow-text {
+  font-size: 0.65rem;
+  color: var(--text-secondary);
+  position: absolute;
+  top: -12px;
+  white-space: nowrap;
+}
+
+.legend-arrow {
+  color: var(--border-color);
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.legend-note {
+  font-size: 0.75rem;
+  color: var(--accent-amber);
+}
+
+@media (max-width: 1024px) {
+  .maintenance-container {
+    grid-template-columns: 1fr;
+  }
+}
