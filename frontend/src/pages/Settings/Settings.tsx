@@ -32,30 +32,32 @@ const Settings: React.FC = () => {
 
       <div className="settings-right">
         <h3 className="section-title">ROLE-BASED ACCESS (RBAC)</h3>
-        <table className="data-table rbac-table">
-          <thead>
-            <tr>
-              <th>ROLE</th>
-              <th>FLEET</th>
-              <th>DRIVERS</th>
-              <th>TRIPS</th>
-              <th>FUEL/EXP.</th>
-              <th>ANALYTICS</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rbacData.map(row => (
-              <tr key={row.id}>
-                <td className="font-medium text-white">{row.role}</td>
-                <td>{row.fleet}</td>
-                <td>{row.drivers}</td>
-                <td>{row.trips}</td>
-                <td>{row.fuel}</td>
-                <td>{row.analytics}</td>
+        <div className="table-responsive">
+          <table className="data-table rbac-table">
+            <thead>
+              <tr>
+                <th>ROLE</th>
+                <th>FLEET</th>
+                <th>DRIVERS</th>
+                <th>TRIPS</th>
+                <th>FUEL/EXP.</th>
+                <th>ANALYTICS</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {rbacData.map(row => (
+                <tr key={row.id}>
+                  <td className="font-medium text-white">{row.role}</td>
+                  <td>{row.fleet}</td>
+                  <td>{row.drivers}</td>
+                  <td>{row.trips}</td>
+                  <td>{row.fuel}</td>
+                  <td>{row.analytics}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

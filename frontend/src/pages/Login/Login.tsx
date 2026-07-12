@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { X, ArrowLeft } from 'lucide-react';
 import logo from '../../assets/TransitOpsLOGO.webp';
@@ -21,6 +21,16 @@ const Login: React.FC = () => {
   
   const { refreshSession } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  React.useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('logout') === 'success') {
+      setSuccessMsg('You have successfully logged out.');
+      // Clean up URL
+      navigate('/login', { replace: true });
+    }
+  }, [location, navigate]);
 
   const handleLoginInitiate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -155,7 +165,7 @@ const Login: React.FC = () => {
               <div className="form-options" style={{justifyContent: 'flex-end'}}>
                 <button type="button" className="text-button" onClick={() => { setMode('forgot'); setErrorMsg(''); setSuccessMsg(''); }}>Forgot password?</button>
               </div>
-              <button type="submit" className="btn-primary" disabled={isSubmitting}>{isSubmitting ? 'Signing in...' : 'Sign In'}</button>
+              <button type="submit" className="btn-primary w-full" disabled={isSubmitting}>{isSubmitting ? 'Signing in...' : 'Sign In'}</button>
             </form>
           )}
 
@@ -165,7 +175,7 @@ const Login: React.FC = () => {
                 <label htmlFor="otp">One-Time Password (OTP)</label>
                 <input type="text" id="otp" className="form-input" value={otp} onChange={(e) => setOtp(e.target.value)} placeholder="000000" maxLength={6} required />
               </div>
-              <button type="submit" className="btn-primary" disabled={isSubmitting}>{isSubmitting ? 'Verifying...' : 'Verify & Login'}</button>
+              <button type="submit" className="btn-primary w-full" disabled={isSubmitting}>{isSubmitting ? 'Verifying...' : 'Verify & Login'}</button>
               <button type="button" className="btn-secondary" onClick={() => setMode('login')} style={{marginTop: '12px', width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #334155', background: 'transparent', color: '#94a3b8', cursor: 'pointer'}}>
                 <ArrowLeft size={16} style={{display: 'inline', marginRight: '8px', verticalAlign: 'middle'}}/> Back to Login
               </button>
@@ -178,7 +188,7 @@ const Login: React.FC = () => {
                 <label htmlFor="email">Email</label>
                 <input type="email" id="email" className="form-input" value={email} onChange={(e) => setEmail(e.target.value)} required />
               </div>
-              <button type="submit" className="btn-primary" disabled={isSubmitting}>{isSubmitting ? 'Sending...' : 'Send Reset Code'}</button>
+              <button type="submit" className="btn-primary w-full" disabled={isSubmitting}>{isSubmitting ? 'Sending...' : 'Send Reset Code'}</button>
               <button type="button" className="btn-secondary" onClick={() => setMode('login')} style={{marginTop: '12px', width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #334155', background: 'transparent', color: '#94a3b8', cursor: 'pointer'}}>
                 <ArrowLeft size={16} style={{display: 'inline', marginRight: '8px', verticalAlign: 'middle'}}/> Back to Login
               </button>
@@ -195,7 +205,7 @@ const Login: React.FC = () => {
                 <label htmlFor="newPassword">New Password</label>
                 <input type="password" id="newPassword" className="form-input" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required />
               </div>
-              <button type="submit" className="btn-primary" disabled={isSubmitting}>{isSubmitting ? 'Resetting...' : 'Reset Password'}</button>
+              <button type="submit" className="btn-primary w-full" disabled={isSubmitting}>{isSubmitting ? 'Resetting...' : 'Reset Password'}</button>
               <button type="button" className="btn-secondary" onClick={() => setMode('login')} style={{marginTop: '12px', width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #334155', background: 'transparent', color: '#94a3b8', cursor: 'pointer'}}>
                 <ArrowLeft size={16} style={{display: 'inline', marginRight: '8px', verticalAlign: 'middle'}}/> Back to Login
               </button>

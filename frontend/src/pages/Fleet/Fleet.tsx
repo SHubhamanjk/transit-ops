@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getVehicles, addVehicle } from '../../api/vehicles';
+import { X } from 'lucide-react';
+import ExpandableSearch from '../../components/ExpandableSearch/ExpandableSearch';
 import './Fleet.css';
 
 const Fleet = () => {
@@ -7,6 +9,7 @@ const Fleet = () => {
   const [vehicles, setVehicles] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   
   // Modal state
   const [showModal, setShowModal] = useState(false);
@@ -69,7 +72,14 @@ const Fleet = () => {
     <div className="fleet-page">
       <div className="page-header">
         <h1>Fleet Management</h1>
-        <button className="btn-primary" onClick={() => setShowModal(true)}>+ Add Vehicle</button>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <ExpandableSearch 
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="Search vehicles..."
+          />
+          <button className="btn-primary" style={{ height: '36px' }} onClick={() => setShowModal(true)}>+ Add Vehicle</button>
+        </div>
       </div>
 
       <div className="tabs">
@@ -89,37 +99,51 @@ const Fleet = () => {
       <div className="table-container">
         {loading ? (
           <div className="loading-state">Loading vehicles...</div>
-        ) : vehicles.length === 0 ? (
-          <div className="empty-state">No vehicles found for this filter.</div>
         ) : (
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Registration</th>
-                <th>Model</th>
-                <th>Type</th>
-                <th>Status</th>
-                <th>Odometer (km)</th>
-                <th>Capacity (kg)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {vehicles.map((v) => (
-                <tr key={v.id}>
-                  <td>{v.registration_number}</td>
-                  <td>{v.model}</td>
-                  <td>{v.type}</td>
-                  <td>
-                    <span className={`status-badge status-${v.status.toLowerCase().replace('_', '-')}`}>
-                      {v.status.replace('_', ' ')}
-                    </span>
-                  </td>
-                  <td>{v.odometer.toLocaleString()}</td>
-                  <td>{v.max_load_capacity.toLocaleString()}</td>
+          (() => {
+            const filteredVehicles = vehicles.filter(v => 
+              v.registration_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              v.model?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              v.type?.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+
+            if (filteredVehicles.length === 0) {
+              return <div className="empty-state">No vehicles found.</div>;
+            }
+
+            return (
+          <div className="table-responsive">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Registration</th>
+                  <th>Model</th>
+                  <th>Type</th>
+                  <th>Status</th>
+                  <th>Odometer (km)</th>
+                  <th>Capacity (kg)</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {filteredVehicles.map((v) => (
+                  <tr key={v.id}>
+                    <td>{v.registration_number}</td>
+                    <td>{v.model}</td>
+                    <td>{v.type}</td>
+                    <td>
+                      <span className={`status-badge status-${v.status.toLowerCase().replace('_', '-')}`}>
+                        {v.status.replace('_', ' ')}
+                      </span>
+                    </td>
+                    <td>{v.odometer.toLocaleString()}</td>
+                    <td>{v.max_load_capacity.toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+            );
+          })()
         )}
       </div>
 
@@ -128,7 +152,7 @@ const Fleet = () => {
           <div className="modal-content" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Register New Vehicle</h2>
-              <button className="close-btn" onClick={() => setShowModal(false)}>&times;</button>
+              <button className="close-btn" onClick={() => setShowModal(false)}><X size={20} /></button>
             </div>
             <form onSubmit={handleAddVehicle} className="vehicle-form">
               {formError && <div className="error-banner">{formError}</div>}

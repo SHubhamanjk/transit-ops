@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { X } from 'lucide-react';
 import { fetchWithAuth } from '../../api/client';
 import { getAvailableVehicles } from '../../api/vehicles';
 import SearchableSelect from '../../components/SearchableSelect/SearchableSelect';
+import ExpandableSearch from '../../components/ExpandableSearch/ExpandableSearch';
 import './Maintenance.css';
 
 const Maintenance = () => {
@@ -9,6 +11,7 @@ const Maintenance = () => {
   const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   
   // Modal state
   const [showModal, setShowModal] = useState(false);
@@ -99,7 +102,14 @@ const Maintenance = () => {
     <div className="maintenance-page">
       <div className="page-header">
         <h1>Maintenance Logs</h1>
-        <button className="btn-primary" onClick={openCreateModal}>+ Log Maintenance</button>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <ExpandableSearch 
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="Search logs..."
+          />
+          <button className="btn-primary" style={{ height: '36px' }} onClick={openCreateModal}>+ Log Maintenance</button>
+        </div>
       </div>
 
       <div className="tabs">
@@ -119,35 +129,47 @@ const Maintenance = () => {
       <div className="table-container">
         {loading ? (
           <div className="loading-state">Loading logs...</div>
-        ) : logs.length === 0 ? (
-          <div className="empty-state">No maintenance records found for this filter.</div>
         ) : (
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Description</th>
-                <th>Status</th>
-                <th>Start Date</th>
-                <th>Cost (Est)</th>
-                <th>Final Cost</th>
-              </tr>
-            </thead>
-            <tbody>
-              {logs.map((log) => (
-                <tr key={log.id}>
-                  <td>{log.description}</td>
-                  <td>
-                    <span className={`status-badge status-${log.status.toLowerCase().replace('_', '-')}`}>
-                      {log.status}
-                    </span>
-                  </td>
-                  <td>{new Date(log.start_date).toLocaleDateString()}</td>
-                  <td>${log.estimated_cost}</td>
-                  <td>{log.total_cost ? `$${log.total_cost}` : '-'}</td>
+          (() => {
+            const filteredLogs = logs.filter(log => 
+              log.description?.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+
+            if (filteredLogs.length === 0) {
+              return <div className="empty-state">No maintenance records found.</div>;
+            }
+
+            return (
+          <div className="table-responsive">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Description</th>
+                  <th>Status</th>
+                  <th>Start Date</th>
+                  <th>Cost (Est)</th>
+                  <th>Final Cost</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {filteredLogs.map((log) => (
+                  <tr key={log.id}>
+                    <td>{log.description}</td>
+                    <td>
+                      <span className={`status-badge status-${log.status.toLowerCase().replace('_', '-')}`}>
+                        {log.status.replace('_', ' ')}
+                      </span>
+                    </td>
+                    <td>{new Date(log.start_date).toLocaleDateString()}</td>
+                    <td>${log.estimated_cost.toLocaleString()}</td>
+                    <td>{log.final_cost ? `$${log.final_cost.toLocaleString()}` : '-'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+            );
+          })()
         )}
       </div>
 
@@ -156,7 +178,7 @@ const Maintenance = () => {
           <div className="modal-content" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Schedule Maintenance</h2>
-              <button className="close-btn" onClick={() => setShowModal(false)}>&times;</button>
+              <button className="close-btn" onClick={() => setShowModal(false)}><X size={20} /></button>
             </div>
             <form onSubmit={handleCreateMaintenance} className="maintenance-form">
               {formError && <div className="error-banner">{formError}</div>}

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { X } from 'lucide-react';
 import { getTrips, createTrip } from '../../api/trips';
 import { getAvailableDrivers } from '../../api/drivers';
 import { getAvailableVehicles } from '../../api/vehicles';
 import SearchableSelect from '../../components/SearchableSelect/SearchableSelect';
+import ExpandableSearch from '../../components/ExpandableSearch/ExpandableSearch';
 import './Trips.css';
 
 const Trips = () => {
@@ -10,6 +12,7 @@ const Trips = () => {
   const [trips, setTrips] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   
   // Modal state
   const [showModal, setShowModal] = useState(false);
@@ -99,7 +102,14 @@ const Trips = () => {
     <div className="trips-page">
       <div className="page-header">
         <h1>Trip Management</h1>
-        <button className="btn-primary" onClick={openCreateModal}>+ Create Trip</button>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <ExpandableSearch 
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="Search routes..."
+          />
+          <button className="btn-primary" style={{ height: '36px' }} onClick={openCreateModal}>+ Create Trip</button>
+        </div>
       </div>
 
       <div className="tabs">
@@ -119,39 +129,52 @@ const Trips = () => {
       <div className="table-container">
         {loading ? (
           <div className="loading-state">Loading trips...</div>
-        ) : trips.length === 0 ? (
-          <div className="empty-state">No trips found for this filter.</div>
         ) : (
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Route</th>
-                <th>Cargo (kg)</th>
-                <th>Status</th>
-                <th>Distance (Est.)</th>
-                <th>Duration (Est.)</th>
-                <th>Created At</th>
-              </tr>
-            </thead>
-            <tbody>
-              {trips.map((t) => (
-                <tr key={t.id}>
-                  <td>
-                    <strong>{t.source}</strong> &rarr; <strong>{t.destination}</strong>
-                  </td>
-                  <td>{t.cargo_weight}kg</td>
-                  <td>
-                    <span className={`status-badge status-${t.status.toLowerCase().replace('_', '-')}`}>
-                      {t.status.replace('_', ' ')}
-                    </span>
-                  </td>
-                  <td>{t.planned_distance} km</td>
-                  <td>{t.estimated_duration_hours} hrs</td>
-                  <td>{new Date(t.created_at).toLocaleDateString()}</td>
+          (() => {
+            const filteredTrips = trips.filter(t => 
+              t.source?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              t.destination?.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+
+            if (filteredTrips.length === 0) {
+              return <div className="empty-state">No trips found.</div>;
+            }
+
+            return (
+          <div className="table-responsive">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Route</th>
+                  <th>Cargo (kg)</th>
+                  <th>Status</th>
+                  <th>Distance (Est.)</th>
+                  <th>Duration (Est.)</th>
+                  <th>Created At</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {filteredTrips.map((t) => (
+                  <tr key={t.id}>
+                    <td>
+                      <strong>{t.source}</strong> &rarr; <strong>{t.destination}</strong>
+                    </td>
+                    <td>{t.cargo_weight}kg</td>
+                    <td>
+                      <span className={`status-badge status-${t.status.toLowerCase().replace('_', '-')}`}>
+                        {t.status.replace('_', ' ')}
+                      </span>
+                    </td>
+                    <td>{t.planned_distance} km</td>
+                    <td>{t.estimated_duration_hours} hrs</td>
+                    <td>{new Date(t.created_at).toLocaleDateString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+            );
+          })()
         )}
       </div>
 
@@ -160,7 +183,7 @@ const Trips = () => {
           <div className="modal-content" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Create New Trip (Draft)</h2>
-              <button className="close-btn" onClick={() => setShowModal(false)}>&times;</button>
+              <button className="close-btn" onClick={() => setShowModal(false)}><X size={20} /></button>
             </div>
             <form onSubmit={handleCreateTrip} className="trip-form">
               {formError && <div className="error-banner">{formError}</div>}

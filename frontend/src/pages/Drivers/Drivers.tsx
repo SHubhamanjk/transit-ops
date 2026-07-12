@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { X } from 'lucide-react';
 import { getDrivers, addDriver } from '../../api/drivers';
+import ExpandableSearch from '../../components/ExpandableSearch/ExpandableSearch';
 import './Drivers.css';
 
 const Drivers = () => {
@@ -7,6 +9,7 @@ const Drivers = () => {
   const [drivers, setDrivers] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   
   // Modal state
   const [showModal, setShowModal] = useState(false);
@@ -80,7 +83,14 @@ const Drivers = () => {
     <div className="drivers-page">
       <div className="page-header">
         <h1>Driver Management</h1>
-        <button className="btn-primary" onClick={() => setShowModal(true)}>+ Add Driver</button>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <ExpandableSearch 
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="Search drivers..."
+          />
+          <button className="btn-primary" style={{ height: '36px' }} onClick={() => setShowModal(true)}>+ Add Driver</button>
+        </div>
       </div>
 
       <div className="tabs">
@@ -100,35 +110,48 @@ const Drivers = () => {
       <div className="table-container">
         {loading ? (
           <div className="loading-state">Loading drivers...</div>
-        ) : drivers.length === 0 ? (
-          <div className="empty-state">No drivers found for this filter.</div>
         ) : (
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>License</th>
-                <th>Status</th>
-                <th>Total Run Time (km)</th>
-                <th>Safety Score</th>
-              </tr>
-            </thead>
-            <tbody>
-              {drivers.map((d) => (
-                <tr key={d.id}>
-                  <td>{d.name}</td>
-                  <td>{d.license_number} ({d.license_category})</td>
-                  <td>
-                    <span className={`status-badge status-${d.status.toLowerCase()}`}>
-                      {d.status.replace('_', ' ')}
-                    </span>
-                  </td>
-                  <td>{d.total_run_time_kms} km</td>
-                  <td>{d.safety_score}%</td>
+          (() => {
+            const filteredDrivers = drivers.filter(d => 
+              d.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              d.license_number?.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+
+            if (filteredDrivers.length === 0) {
+              return <div className="empty-state">No drivers found.</div>;
+            }
+
+            return (
+          <div className="table-responsive">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>License</th>
+                  <th>Status</th>
+                  <th>Total Run Time (km)</th>
+                  <th>Safety Score</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {filteredDrivers.map((d) => (
+                  <tr key={d.id}>
+                    <td>{d.name}</td>
+                    <td>{d.license_number} ({d.license_category})</td>
+                    <td>
+                      <span className={`status-badge status-${d.status.toLowerCase()}`}>
+                        {d.status.replace('_', ' ')}
+                      </span>
+                    </td>
+                    <td>{d.total_run_time_kms} km</td>
+                    <td>{d.safety_score}%</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+            );
+          })()
         )}
       </div>
 
@@ -137,7 +160,7 @@ const Drivers = () => {
           <div className="modal-content" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Add New Driver</h2>
-              <button className="close-btn" onClick={() => setShowModal(false)}>&times;</button>
+              <button className="close-btn" onClick={() => setShowModal(false)}><X size={20} /></button>
             </div>
             <form onSubmit={handleAddDriver} className="driver-form">
               {formError && <div className="error-banner">{formError}</div>}

@@ -72,30 +72,38 @@ const Dashboard: React.FC = () => {
           {recentTrips.length === 0 ? (
             <div className="empty-state">No recent trips found.</div>
           ) : (
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>TRIP</th>
-                  <th>DRIVER ID</th>
-                  <th>STATUS</th>
-                  <th>DISTANCE</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recentTrips.map((trip) => (
-                  <tr key={trip.id}>
-                    <td title={trip.id}>{trip.id.substring(0, 8)}...</td>
-                    <td title={trip.driver_id}>{trip.driver_id.substring(0, 8)}...</td>
-                    <td>
-                      <span className={`status-badge status-${trip.status.toLowerCase().replace('_', '-')}`}>
-                        {trip.status.replace('_', ' ')}
-                      </span>
-                    </td>
-                    <td>{trip.estimated_distance} km</td>
+            <div className="table-responsive">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Route</th>
+                    <th>Cargo (kg)</th>
+                    <th>Status</th>
+                    <th>Distance (Est.)</th>
+                    <th>Duration (Est.)</th>
+                    <th>Created At</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {recentTrips.map((t) => (
+                    <tr key={t.id}>
+                      <td>
+                        <strong>{t.source}</strong> &rarr; <strong>{t.destination}</strong>
+                      </td>
+                      <td>{t.cargo_weight}kg</td>
+                      <td>
+                        <span className={`status-badge status-${t.status.toLowerCase().replace('_', '-')}`}>
+                          {t.status.replace('_', ' ')}
+                        </span>
+                      </td>
+                      <td>{t.planned_distance} km</td>
+                      <td>{t.estimated_duration_hours} hrs</td>
+                      <td>{new Date(t.created_at).toLocaleDateString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
 

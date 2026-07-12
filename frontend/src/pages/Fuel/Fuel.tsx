@@ -23,54 +23,58 @@ const Fuel: React.FC = () => {
         </div>
       </div>
       
-      <table className="data-table mb-8">
-        <thead>
-          <tr>
-            <th>VEHICLE</th>
-            <th>DATE</th>
-            <th>LITERS</th>
-            <th>FUEL COST</th>
-          </tr>
-        </thead>
-        <tbody>
-          {fuelLogs.map(log => (
-            <tr key={log.id}>
-              <td>{log.vehicle}</td>
-              <td>{log.date}</td>
-              <td>{log.liters}</td>
-              <td>{log.cost}</td>
+      <div className="table-responsive mb-8">
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>VEHICLE</th>
+              <th>DATE</th>
+              <th>LITERS</th>
+              <th>FUEL COST</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {fuelLogs.map(log => (
+              <tr key={log.id}>
+                <td>{log.vehicle}</td>
+                <td>{log.date}</td>
+                <td>{log.liters}</td>
+                <td>{log.cost}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       <h3 className="section-title">OTHER EXPENSES (TOLL / MISC)</h3>
-      <table className="data-table">
-        <thead>
-          <tr>
-            <th>TRIP</th>
-            <th>VEHICLE</th>
-            <th>TOLL</th>
-            <th>OTHER</th>
-            <th>MAINT. (LINKED)</th>
-            <th>TOTAL</th>
-          </tr>
-        </thead>
-        <tbody>
-          {otherExpenses.map(exp => (
-            <tr key={exp.id}>
-              <td>{exp.trip}</td>
-              <td>{exp.vehicle}</td>
-              <td>{exp.toll}</td>
-              <td>{exp.other}</td>
-              <td>{exp.maint}</td>
-              <td>
-                <span className={`status-badge bg-${exp.statusColor}`}>{exp.totalStatus}</span>
-              </td>
+      <div className="table-responsive">
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>TRIP</th>
+              <th>VEHICLE</th>
+              <th>TOLL</th>
+              <th>OTHER</th>
+              <th>MAINT. (LINKED)</th>
+              <th>TOTAL</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {otherExpenses.map(exp => (
+              <tr key={exp.id}>
+                <td>{exp.trip}</td>
+                <td>{exp.vehicle}</td>
+                <td>{exp.toll}</td>
+                <td>{exp.other}</td>
+                <td>{exp.maint}</td>
+                <td>
+                  <span className={`status-badge bg-${exp.statusColor}`}>{exp.totalStatus}</span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       <div className="fuel-total-row">
         <span>TOTAL OPERATIONAL COST (AUTO) = FUEL + MAINT</span>

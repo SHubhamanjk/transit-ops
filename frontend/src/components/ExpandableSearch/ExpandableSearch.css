@@ -1,0 +1,82 @@
+.expandable-search {
+  display: flex;
+  align-items: center;
+  background-color: transparent;
+  border: 1px solid var(--border-color, #334155);
+  border-radius: 4px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  height: 36px;
+  width: 36px; /* Initially icon size */
+  overflow: hidden;
+}
+
+.expandable-search:not(.expanded):hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.expandable-search.expanded, .expandable-search.has-value {
+  width: 250px;
+  background-color: var(--bg-dark, #0f172a);
+}
+
+@media (max-width: 480px) {
+  .expandable-search.expanded, .expandable-search.has-value {
+    width: 200px;
+  }
+  
+  /* Hide the adjacent action button (e.g. + Add Vehicle) when expanded on small screens */
+  .expandable-search.expanded ~ button,
+  .expandable-search.has-value ~ button {
+    display: none !important;
+  }
+}
+
+.search-icon-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary, #94a3b8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.expandable-search.expanded .search-icon-btn {
+  cursor: default;
+}
+
+.search-input-field {
+  background: transparent;
+  border: none;
+  color: var(--text-primary, #ffffff);
+  width: 100%;
+  padding: 0;
+  outline: none;
+  font-size: 0.875rem;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.expandable-search.expanded .search-input-field, .expandable-search.has-value .search-input-field {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.clear-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary, #94a3b8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.5rem;
+  cursor: pointer;
+}
+
+.clear-btn:hover {
+  color: var(--text-primary, #ffffff);
+}
