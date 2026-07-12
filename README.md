@@ -1,17 +1,27 @@
-# TransitOps : Smart Transport Operations Platform
+# TransitOps: Smart Transport Operations Platform
 
-TransitOps is a comprehensive Transit and Fleet Management System designed to streamline the operations of logistics and transportation companies. It provides an intuitive interface and robust backend to manage vehicles, drivers, trips, maintenance logs, and financial statistics efficiently.
+TransitOps is an end to end fleet and transport management platform that helps logistics and transportation companies digitize their daily operations. It replaces manual spreadsheets and paperwork with a centralized system to manage vehicles, drivers, trips, maintenance, fuel, expenses, and operational analytics.
 
-## What it does
-- **Dashboard Analytics:** Visualizes KPIs such as total operational costs, active trips, and fleet utilization.
-- **Vehicle Management:** Register and track vehicles (trucks, vans, buses, sedans), their status (Available, On Trip, In Shop, Retired), capacities, and acquisition costs.
-- **Driver Management:** Manage driver profiles, track their statuses (Available, On Trip, Off Duty, Suspended), and monitor safety scores and total run times.
-- **Trip Dispatching:** Create, dispatch, complete, and cancel trips. Assign available drivers and vehicles to specific routes while ensuring cargo capacities and driver licenses are valid.
-- **Maintenance Logging:** Schedule and log vehicle maintenance, estimating durations and tracking final costs to keep the fleet in top condition.
-- **OTP Authentication Flow:** Secure login and identity verification using One-Time Passwords (OTPs) sent to the user.
-- **Automated Reminders & Cron Jobs:** Background cron jobs automatically track and send alerts for:
-  - Driver license expiries.
-  - Overdue vehicle maintenance.
+## Business Problems It Solves
+
+Many transport companies still rely on manual processes, leading to vehicle scheduling conflicts, double assignments, missed maintenance, expired driver licenses, inaccurate expense tracking, and limited operational visibility. These issues increase operational costs, reduce fleet utilization, and affect service reliability.
+
+TransitOps addresses these challenges by automating transport operations, enforcing business rules, and providing real time insights to improve efficiency, reduce errors, and support better decision making.
+
+## Key Features
+
+* **Interactive Dashboard:** Monitor fleet utilization, active trips, operational costs, vehicle availability, and other key performance indicators in real time.
+* **Vehicle Management:** Register and manage vehicles, track their status, capacity, odometer, and lifecycle.
+* **Driver Management:** Maintain driver profiles, monitor license validity, safety scores, availability, and duty status.
+* **Smart Trip Dispatching:** Create, dispatch, complete, and cancel trips with automatic validation for vehicle availability, driver eligibility, and cargo capacity.
+* **Maintenance Management:** Schedule and track vehicle maintenance while automatically preventing vehicles under maintenance from being assigned to new trips.
+* **Fuel & Expense Tracking:** Record fuel consumption, maintenance costs, tolls, and other operational expenses to monitor overall fleet costs.
+* **Secure Authentication:** OTP based authentication with role based access control for secure access.
+* **Automated Alerts:** Background jobs continuously monitor driver license expiries and upcoming maintenance, sending timely reminders before they become operational issues.
+* **Business Analytics:** Generate actionable insights into fleet utilization, fuel efficiency, operational costs, and vehicle performance to support data driven decisions.
+
+TransitOps transforms transport operations into a smarter, automated, and data driven workflow, helping organizations improve fleet utilization, reduce operational costs, ensure compliance, and make faster business decisions.
+
 
 ---
 
