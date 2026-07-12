@@ -113,6 +113,7 @@ async def complete_trip(db: AsyncSession, trip_id: str, complete_data: TripCompl
     background_tasks.add_task(process_trip_completion_background, trip_id, complete_data.model_dump())
     background_tasks.add_task(recalculate_trip_stats)
     background_tasks.add_task(recalculate_vehicle_stats)
+    background_tasks.add_task(recalculate_driver_stats)
     return trip
 
 async def process_trip_completion_background(trip_id: str, complete_data: dict):
@@ -178,5 +179,6 @@ async def cancel_trip(db: AsyncSession, trip_id: str, background_tasks: Backgrou
     background_tasks.add_task(recalculate_trip_stats)
     if was_dispatched:
         background_tasks.add_task(recalculate_vehicle_stats)
+        background_tasks.add_task(recalculate_driver_stats)
         
     return trip

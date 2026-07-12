@@ -71,7 +71,7 @@ const Fleet = () => {
   return (
     <div className="fleet-page">
       <div className="page-header">
-        <h1>Fleet Management</h1>
+        <h1>Vehicle Management</h1>
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           <ExpandableSearch 
             value={searchQuery}

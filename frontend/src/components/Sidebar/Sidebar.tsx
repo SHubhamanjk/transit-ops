@@ -1,6 +1,7 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
-import { X } from 'lucide-react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { X, LogOut } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 import logo from '../../assets/TransitOpsLOGO.webp';
 import './Sidebar.css';
 
@@ -10,6 +11,14 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+    if (onClose) onClose();
+  };
 
   return (
     <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
@@ -29,7 +38,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => {
           Dashboard
         </NavLink>
         <NavLink to="/fleet" onClick={onClose} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-          Fleet
+          Vehicle
         </NavLink>
         <NavLink to="/drivers" onClick={onClose} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
           Drivers
@@ -42,6 +51,16 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => {
         </NavLink>
 
       </nav>
+      <div style={{ marginTop: 'auto', padding: '1rem 0', borderTop: '1px solid var(--border-color)' }}>
+        <button 
+          className="nav-item" 
+          onClick={handleLogout}
+          style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.75rem', borderLeft: '3px solid transparent' }}
+        >
+          <LogOut size={18} />
+          <span>Logout</span>
+        </button>
+      </div>
     </aside>
   );
 };
