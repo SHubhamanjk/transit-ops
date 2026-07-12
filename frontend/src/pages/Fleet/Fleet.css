@@ -1,0 +1,29 @@
+.fleet-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.fleet-header-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.fleet-filters {
+  display: flex;
+  gap: 1rem;
+}
+
+.table-container {
+  background-color: var(--bg-dark);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.fleet-rules {
+  color: var(--accent-amber);
+  font-size: 0.75rem;
+  font-style: italic;
+}
