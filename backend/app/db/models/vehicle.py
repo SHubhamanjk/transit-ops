@@ -1,6 +1,6 @@
 import enum
 import uuid
-from sqlalchemy import Column, String, Numeric, Enum, DateTime
+from sqlalchemy import Column, String, Numeric, Enum, DateTime, Date
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from app.db.database import Base
@@ -24,6 +24,7 @@ class Vehicle(Base):
     total_trip_cost = Column(Numeric(10, 2), nullable=False, default=0.0)
     total_maintenance_cost = Column(Numeric(10, 2), nullable=False, default=0.0)
     total_fuel_consumed = Column(Numeric(10, 2), nullable=False, default=0.0)
+    last_maintained_date = Column(Date, nullable=True)
     status = Column(Enum(VehicleStatusEnum), nullable=False, default=VehicleStatusEnum.AVAILABLE, index=True)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())

@@ -23,6 +23,7 @@ class Driver(Base):
     contact_number = Column(String, nullable=False)
     safety_score = Column(Numeric(5, 2), nullable=False, default=100.0)
     total_trip_cost = Column(Numeric(10, 2), nullable=False, default=0.0)
+    total_run_time_kms = Column(Numeric(10, 2), nullable=False, default=0.0)
     status = Column(Enum(DriverStatusEnum), nullable=False, default=DriverStatusEnum.AVAILABLE, index=True)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())

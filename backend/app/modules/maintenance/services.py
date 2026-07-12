@@ -67,23 +67,42 @@ async def complete_maintenance(db: AsyncSession, log_id: str, complete_data: Mai
     if vehicle:
         if vehicle.status == VehicleStatusEnum.IN_SHOP:
             vehicle.status = VehicleStatusEnum.AVAILABLE
-        vehicle.total_maintenance_cost += complete_data.total_cost
+        vehicle.last_maintained_date = complete_data.end_date
         db.add(vehicle)
         
-    # Create an Expense entry automatically for the maintenance cost using the FINAL cost
-    new_expense = Expense(
-        vehicle_id=log.vehicle_id,
-        type=ExpenseTypeEnum.MAINTENANCE,
-        amount=complete_data.total_cost,
-        description=log.description,
-        date=complete_data.end_date
-    )
-    db.add(new_expense)
-
     await db.commit()
     await db.refresh(log)
     
+    background_tasks.add_task(process_maintenance_completion_background, log_id, complete_data.model_dump())
     background_tasks.add_task(recalculate_vehicle_stats)
     background_tasks.add_task(recalculate_financial_stats)
     
     return log
+
+async def process_maintenance_completion_background(log_id: str, complete_data: dict):
+    from app.db.database import AsyncSessionLocal
+    from app.db.models.expense import Expense, ExpenseTypeEnum
+    
+    async with AsyncSessionLocal() as db:
+        log = (await db.execute(select(MaintenanceLog).where(MaintenanceLog.id == log_id))).scalars().first()
+        if not log:
+            return
+            
+        vehicle = (await db.execute(select(Vehicle).where(Vehicle.id == log.vehicle_id))).scalars().first()
+        
+        total_cost = complete_data.get('total_cost', 0)
+        end_date = complete_data.get('end_date')
+
+        if vehicle:
+            vehicle.total_maintenance_cost += total_cost
+            db.add(vehicle)
+
+        new_expense = Expense(
+            vehicle_id=log.vehicle_id,
+            type=ExpenseTypeEnum.MAINTENANCE,
+            amount=total_cost,
+            description=log.description,
+            date=end_date
+        )
+        db.add(new_expense)
+        await db.commit()

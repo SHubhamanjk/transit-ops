@@ -8,6 +8,11 @@ from app.services.dashboard_service import recalculate_vehicle_stats
 from datetime import datetime
 from sqlalchemy import or_
 
+async def get_available_vehicles_dropdown(db: AsyncSession):
+    query = select(Vehicle).where(Vehicle.status == VehicleStatusEnum.AVAILABLE).order_by(Vehicle.license_plate)
+    result = await db.execute(query)
+    return result.scalars().all()
+
 async def get_vehicles(
     db: AsyncSession, skip: int = 0, limit: int = 10, type_filter: str = None, status_filter: str = None,
     search: str = None, created_after: datetime = None, created_before: datetime = None

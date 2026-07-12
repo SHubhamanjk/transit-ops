@@ -5,12 +5,21 @@ from app.db.database import get_db
 from app.db.models.user import User, RoleEnum
 from app.modules.auth.utils import get_current_user, require_role
 from app.modules.drivers.schemas import DriverCreate, DriverUpdate, DriverStatusUpdate, DriverResponse, DriverDetailResponse
+from app.modules.drivers import schemas
 from app.modules.drivers import services
 
 router = APIRouter(prefix="/drivers", tags=["Drivers"])
 
 from datetime import datetime
 from typing import List, Optional
+
+@router.get("/dropdown", response_model=List[schemas.DriverDropdownResponse])
+async def list_available_drivers_dropdown(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Get a lightweight list of ONLY AVAILABLE drivers for dropdowns."""
+    return await services.get_available_drivers_dropdown(db)
 
 @router.get("/", response_model=List[DriverResponse])
 async def list_drivers(

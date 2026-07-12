@@ -50,7 +50,10 @@ async def initiate_login(db: AsyncSession, email: str, password: str):
     result = await db.execute(query)
     user = result.scalars().first()
     
-    if not user or not verify_password(password, user.password_hash):
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User does not exist")
+        
+    if not verify_password(password, user.password_hash):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
     
     # Generate OTP
@@ -98,6 +101,34 @@ async def confirm_login(db: AsyncSession, email: str, otp_code: str):
     return {
         "access_token": access_token,
         "refresh_token": refresh_token,
+        "token_type": "bearer",
+        "user": user
+    }
+
+async def refresh_access_token(db: AsyncSession, refresh_token: str):
+    from app.core.security import decode_token
+    payload = decode_token(refresh_token)
+    if not payload:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired refresh token")
+        
+    user_id = payload.get("sub")
+    if not user_id:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token payload")
+        
+    query = select(User).where(User.id == user_id)
+    result = await db.execute(query)
+    user = result.scalars().first()
+    
+    if not user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
+        
+    # Generate Tokens
+    new_access_token = create_access_token(data={"sub": str(user.id), "role": user.role})
+    new_refresh_token = create_refresh_token(data={"sub": str(user.id)})
+    
+    return {
+        "access_token": new_access_token,
+        "refresh_token": new_refresh_token,
         "token_type": "bearer",
         "user": user
     }

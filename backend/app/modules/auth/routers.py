@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import get_db
-from app.modules.auth.schemas import UserCreate, UserResponse, LoginInitiate, LoginConfirm, TokenResponse, ForgotPassword, ResetPassword
+from app.modules.auth.schemas import UserCreate, UserResponse, LoginInitiate, LoginConfirm, TokenResponse, ForgotPassword, ResetPassword, RefreshTokenRequest
 from app.modules.auth import services
 from app.modules.auth.utils import get_current_user
 from app.db.models.user import User
@@ -25,6 +25,11 @@ async def login_initiate(creds: LoginInitiate, db: AsyncSession = Depends(get_db
 @router.post("/login/confirm", response_model=TokenResponse)
 async def login_confirm(confirm_data: LoginConfirm, db: AsyncSession = Depends(get_db)):
     return await services.confirm_login(db, confirm_data.email, confirm_data.otp_code)
+
+@router.post("/refresh", response_model=TokenResponse)
+async def refresh_token(data: RefreshTokenRequest, db: AsyncSession = Depends(get_db)):
+    """Exchanges a valid refresh token for a new access token."""
+    return await services.refresh_access_token(db, data.refresh_token)
 
 @router.post("/forgot-password")
 async def forgot_password(data: ForgotPassword, db: AsyncSession = Depends(get_db)):

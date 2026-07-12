@@ -11,6 +11,11 @@ from app.db.models.user import RoleEnum
 from datetime import datetime
 from sqlalchemy import or_
 
+async def get_available_drivers_dropdown(db: AsyncSession):
+    query = select(Driver).where(Driver.status == DriverStatusEnum.AVAILABLE).order_by(Driver.name)
+    result = await db.execute(query)
+    return result.scalars().all()
+
 async def get_drivers(
     db: AsyncSession, skip: int = 0, limit: int = 10, status_filter: str = None,
     search: str = None, created_after: datetime = None, created_before: datetime = None

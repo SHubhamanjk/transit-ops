@@ -5,12 +5,21 @@ from app.db.database import get_db
 from app.db.models.user import User, RoleEnum
 from app.modules.auth.utils import get_current_user, require_role
 from app.modules.vehicles.schemas import VehicleCreate, VehicleUpdate, VehicleStatusUpdate, VehicleResponse, VehicleDetailResponse
+from app.modules.vehicles import schemas
 from app.modules.vehicles import services
 
 router = APIRouter(prefix="/vehicles", tags=["Vehicles"])
 
 from datetime import datetime
 from typing import List, Optional
+
+@router.get("/dropdown", response_model=List[schemas.VehicleDropdownResponse])
+async def list_available_vehicles_dropdown(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Get a lightweight list of ONLY AVAILABLE vehicles for dropdowns."""
+    return await services.get_available_vehicles_dropdown(db)
 
 @router.get("/", response_model=List[VehicleResponse])
 async def list_vehicles(

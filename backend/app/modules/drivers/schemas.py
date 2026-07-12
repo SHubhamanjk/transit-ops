@@ -34,7 +34,13 @@ class DriverResponse(DriverBase):
     user_id: Optional[UUID]
     safety_score: Decimal
     total_trip_cost: Decimal
+    total_run_time_kms: Decimal
     status: DriverStatusEnum
+
+class DriverDropdownResponse(BaseModel):
+    id: UUID
+    name: str
+    license_number: str
     created_at: datetime
     updated_at: datetime
     

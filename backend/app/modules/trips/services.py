@@ -100,35 +100,58 @@ async def complete_trip(db: AsyncSession, trip_id: str, complete_data: TripCompl
     
     if vehicle:
         vehicle.status = VehicleStatusEnum.AVAILABLE
-        vehicle.odometer += complete_data.actual_distance
-        vehicle.total_trip_cost += complete_data.total_cost
-        if complete_data.fuel_consumed:
-            vehicle.total_fuel_consumed += complete_data.fuel_consumed
         db.add(vehicle)
         
     if driver:
         driver.status = DriverStatusEnum.AVAILABLE
-        driver.total_trip_cost += complete_data.total_cost
         db.add(driver)
 
     db.add(trip)
-    
-    # Create an Expense entry automatically for the trip cost
-    from app.db.models.expense import Expense, ExpenseTypeEnum
-    new_expense = Expense(
-        vehicle_id=trip.vehicle_id,
-        type=ExpenseTypeEnum.TRIP_COST,
-        amount=complete_data.total_cost,
-        description=f"Total Trip Cost - Trip ID: {trip.id}",
-        date=trip.completed_at.date()
-    )
-    db.add(new_expense)
     await db.commit()
     await db.refresh(trip)
 
+    background_tasks.add_task(process_trip_completion_background, trip_id, complete_data.model_dump())
     background_tasks.add_task(recalculate_trip_stats)
     background_tasks.add_task(recalculate_vehicle_stats)
     return trip
+
+async def process_trip_completion_background(trip_id: str, complete_data: dict):
+    from app.db.database import AsyncSessionLocal
+    from app.db.models.expense import Expense, ExpenseTypeEnum
+    
+    async with AsyncSessionLocal() as db:
+        trip = (await db.execute(select(Trip).where(Trip.id == trip_id))).scalars().first()
+        if not trip:
+            return
+            
+        vehicle = (await db.execute(select(Vehicle).where(Vehicle.id == trip.vehicle_id))).scalars().first()
+        driver = (await db.execute(select(Driver).where(Driver.id == trip.driver_id))).scalars().first()
+        
+        actual_distance = complete_data.get('actual_distance', 0)
+        total_cost = complete_data.get('total_cost', 0)
+        fuel_consumed = complete_data.get('fuel_consumed', 0)
+
+        if vehicle:
+            vehicle.odometer += actual_distance
+            vehicle.total_trip_cost += total_cost
+            if fuel_consumed:
+                vehicle.total_fuel_consumed += fuel_consumed
+            db.add(vehicle)
+            
+        if driver:
+            driver.total_trip_cost += total_cost
+            driver.total_run_time_kms += actual_distance
+            db.add(driver)
+
+        new_expense = Expense(
+            vehicle_id=trip.vehicle_id,
+            type=ExpenseTypeEnum.TRIP_COST,
+            amount=total_cost,
+            description=f"Total Trip Cost - Trip ID: {trip.id}",
+            date=datetime.now(timezone.utc).date()
+        )
+        db.add(new_expense)
+        await db.commit()
 
 async def cancel_trip(db: AsyncSession, trip_id: str, background_tasks: BackgroundTasks):
     trip = await get_trip_by_id(db, trip_id)
