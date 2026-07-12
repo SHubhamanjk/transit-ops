@@ -1,29 +1,18 @@
-.fleet-container {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
+.fleet-page {
+  padding: 1rem;
 }
 
-.fleet-header-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+/* We reuse the structural styles from Drivers.css since they are shared page layouts */
+.vehicle-form {
+  padding: 1.5rem;
 }
 
-.fleet-filters {
-  display: flex;
-  gap: 1rem;
+.status-in-shop {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: #F59E0B;
 }
 
-.table-container {
-  background-color: var(--bg-dark);
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.fleet-rules {
-  color: var(--accent-amber);
-  font-size: 0.75rem;
-  font-style: italic;
+.status-retired {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #EF4444;
 }

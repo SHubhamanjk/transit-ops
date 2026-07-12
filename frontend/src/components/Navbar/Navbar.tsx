@@ -6,18 +6,13 @@ import './Navbar.css';
 const Navbar: React.FC = () => {
   const { user } = useAuth();
   
-  const getInitials = (email: string) => {
-    if (!email) return 'U';
-    const parts = email.split('@')[0].split(/(?=[A-Z])/);
+  const getInitials = (name: string) => {
+    if (!name) return 'U';
+    const parts = name.split(' ').filter(Boolean);
     if (parts.length > 1) {
-      return (parts[0][0] + parts[1][0]).toUpperCase();
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
     }
-    return email.substring(0, 2).toUpperCase();
-  };
-
-  const getUsername = (email: string) => {
-    if (!email) return 'User';
-    return email.split('@')[0].replace(/([A-Z])/g, ' $1').trim();
+    return name.substring(0, 2).toUpperCase();
   };
 
   return (
@@ -27,9 +22,9 @@ const Navbar: React.FC = () => {
         <input type="text" placeholder="Search..." className="search-input" />
       </div>
       <div className="navbar-user">
-        <span className="user-name">{getUsername(user?.email || '')}</span>
+        <span className="user-name">{user?.name || 'User'}</span>
         <div className="user-role-badge">
-          {user?.role} <span className="user-initials">{getInitials(user?.email || '')}</span>
+          {user?.role} <span className="user-initials">{getInitials(user?.name || '')}</span>
         </div>
       </div>
     </header>

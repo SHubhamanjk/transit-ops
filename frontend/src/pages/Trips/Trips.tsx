@@ -1,128 +1,238 @@
-import React, { useState } from 'react';
-import { X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { getTrips, createTrip } from '../../api/trips';
+import { getAvailableDrivers } from '../../api/drivers';
+import { getAvailableVehicles } from '../../api/vehicles';
+import SearchableSelect from '../../components/SearchableSelect/SearchableSelect';
 import './Trips.css';
 
-const liveTrips = [
-  { id: 'TR001', vehicle: 'VAN-05', driver: 'ALEX', source: 'Gandhinagar Depot', dest: 'Ahmedabad Hub', status: 'Dispatched', statusColor: 'blue', time: '45 min' },
-  { id: 'TR004', vehicle: 'TRUCK-04', driver: 'SURESH', source: 'Vatva Industrial Area', dest: 'Sanand Warehouse', status: 'Draft', statusColor: 'neutral', time: 'Awaiting driver' },
-  { id: 'TR006', vehicle: 'Unassigned', driver: '', source: 'Mansa', dest: 'Kalol Depot', status: 'Cancelled', statusColor: 'red', time: 'Vehicle went to shop' },
-];
-
-const Trips: React.FC = () => {
-  const [cargoWeight, setCargoWeight] = useState('700');
-  const vehicleCapacity = 500;
+const Trips = () => {
+  const [activeTab, setActiveTab] = useState<'DRAFT' | 'DISPATCHED' | 'COMPLETED' | 'CANCELLED' | 'ALL'>('ALL');
+  const [trips, setTrips] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   
-  const exceededBy = parseInt(cargoWeight) - vehicleCapacity;
-  const isError = exceededBy > 0;
+  // Modal state
+  const [showModal, setShowModal] = useState(false);
+  const [availableDrivers, setAvailableDrivers] = useState<any[]>([]);
+  const [availableVehicles, setAvailableVehicles] = useState<any[]>([]);
+  
+  const [formData, setFormData] = useState({
+    vehicle_id: '',
+    driver_id: '',
+    source: '',
+    destination: '',
+    planned_distance: 0,
+    cargo_weight: 0,
+    estimated_duration_hours: 0
+  });
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState('');
+
+  const fetchTrips = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const statusFilter = activeTab === 'ALL' ? undefined : activeTab;
+      const data = await getTrips(0, 50, statusFilter);
+      setTrips(data);
+    } catch (err: any) {
+      setError(err.message || 'Failed to load trips');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTrips();
+  }, [activeTab]);
+
+  const openCreateModal = async () => {
+    setShowModal(true);
+    setFormError('');
+    try {
+      const [drivers, vehicles] = await Promise.all([
+        getAvailableDrivers(),
+        getAvailableVehicles()
+      ]);
+      setAvailableDrivers(drivers);
+      setAvailableVehicles(vehicles);
+      
+      // Auto-select first options if available
+      setFormData(prev => ({
+        ...prev,
+        driver_id: drivers.length > 0 ? drivers[0].id : '',
+        vehicle_id: vehicles.length > 0 ? vehicles[0].id : ''
+      }));
+    } catch (err: any) {
+      setFormError('Failed to load available drivers or vehicles');
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    setFormData({
+      ...formData,
+      [name]: type === 'number' ? Number(value) : value
+    });
+  };
+
+  const handleCreateTrip = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setFormError('');
+    try {
+      await createTrip(formData);
+      setShowModal(false);
+      setFormData({
+        vehicle_id: '', driver_id: '', source: '', destination: '', 
+        planned_distance: 0, cargo_weight: 0, estimated_duration_hours: 0
+      });
+      fetchTrips();
+    } catch (err: any) {
+      setFormError(err.message || 'Failed to create trip');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
-    <div className="trips-container">
-      {/* Split Layout */}
-      <div className="trips-left">
-        <h3 className="section-title">TRIP LIFECYCLE</h3>
-        <div className="lifecycle-stepper">
-          <div className="step active">
-            <div className="step-dot bg-green"></div>
-            <span>Draft</span>
-          </div>
-          <div className="step-line active"></div>
-          <div className="step active">
-            <div className="step-dot bg-blue"></div>
-            <span>Dispatched</span>
-          </div>
-          <div className="step-line"></div>
-          <div className="step">
-            <div className="step-dot bg-neutral"></div>
-            <span>Completed</span>
-          </div>
-          <div className="step-line"></div>
-          <div className="step">
-            <div className="step-dot bg-neutral"></div>
-            <span>Cancelled</span>
-          </div>
-        </div>
-
-        <h3 className="section-title" style={{ marginTop: '2rem' }}>CREATE TRIP</h3>
-        <form className="create-trip-form">
-          <div className="form-group">
-            <label>SOURCE</label>
-            <input type="text" className="form-input" defaultValue="Gandhinagar Depot" />
-          </div>
-          <div className="form-group">
-            <label>DESTINATION</label>
-            <input type="text" className="form-input" defaultValue="Ahmedabad Hub" />
-          </div>
-          <div className="form-group">
-            <label>VEHICLE (AVAILABLE ONLY)</label>
-            <select className="form-input">
-              <option>VAN-05 - 500 kg capacity</option>
-            </select>
-          </div>
-          <div className="form-group">
-            <label>DRIVER (AVAILABLE ONLY)</label>
-            <select className="form-input">
-              <option>Alex</option>
-            </select>
-          </div>
-          <div className="form-group">
-            <label>CARGO WEIGHT (KG)</label>
-            <input 
-              type="number" 
-              className={`form-input ${isError ? 'input-error' : ''}`} 
-              value={cargoWeight} 
-              onChange={(e) => setCargoWeight(e.target.value)} 
-            />
-          </div>
-          <div className="form-group">
-            <label>PLANNED DISTANCE (KM)</label>
-            <input type="number" className="form-input" defaultValue="38" />
-          </div>
-
-          {isError && (
-            <div className="capacity-error">
-              <p>Vehicle Capacity: {vehicleCapacity} kg</p>
-              <p>Cargo Weight: {cargoWeight} kg</p>
-              <p className="error-text">
-                <X size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '4px' }} />
-                Capacity exceeded by {exceededBy} kg — dispatch blocked
-              </p>
-            </div>
-          )}
-
-          <div className="form-actions">
-            <button type="button" className="btn-primary" disabled={isError}>Dispatch {isError && '(disabled)'}</button>
-            <button type="button" className="btn-secondary">Cancel</button>
-          </div>
-        </form>
+    <div className="trips-page">
+      <div className="page-header">
+        <h1>Trip Management</h1>
+        <button className="btn-primary" onClick={openCreateModal}>+ Create Trip</button>
       </div>
 
-      <div className="trips-right">
-        <h3 className="section-title">LIVE BOARD</h3>
-        
-        <div className="live-board-list">
-          {liveTrips.map(trip => (
-            <div className="trip-card" key={trip.id}>
-              <div className="trip-card-header">
-                <span className="trip-id">{trip.id}</span>
-                <span className="trip-assignment">
-                  {trip.vehicle} {trip.driver ? `/ ${trip.driver}` : ''}
-                </span>
-              </div>
-              <div className="trip-route">
-                {trip.source} → {trip.dest}
-              </div>
-              <div className="trip-card-footer">
-                <span className={`status-badge bg-${trip.statusColor}`}>{trip.status}</span>
-                <span className="trip-time">{trip.time}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="trips-rules">
-          On Complete: odometer → fuel log → expenses → Vehicle & Driver Available
-        </div>
+      <div className="tabs">
+        {['ALL', 'DRAFT', 'DISPATCHED', 'COMPLETED', 'CANCELLED'].map((tab) => (
+          <button 
+            key={tab} 
+            className={`tab-btn ${activeTab === tab ? 'active' : ''}`}
+            onClick={() => setActiveTab(tab as any)}
+          >
+            {tab}
+          </button>
+        ))}
       </div>
+
+      {error && <div className="error-banner">{error}</div>}
+
+      <div className="table-container">
+        {loading ? (
+          <div className="loading-state">Loading trips...</div>
+        ) : trips.length === 0 ? (
+          <div className="empty-state">No trips found for this filter.</div>
+        ) : (
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Route</th>
+                <th>Cargo (kg)</th>
+                <th>Status</th>
+                <th>Distance (Est.)</th>
+                <th>Duration (Est.)</th>
+                <th>Created At</th>
+              </tr>
+            </thead>
+            <tbody>
+              {trips.map((t) => (
+                <tr key={t.id}>
+                  <td>
+                    <strong>{t.source}</strong> &rarr; <strong>{t.destination}</strong>
+                  </td>
+                  <td>{t.cargo_weight}kg</td>
+                  <td>
+                    <span className={`status-badge status-${t.status.toLowerCase().replace('_', '-')}`}>
+                      {t.status.replace('_', ' ')}
+                    </span>
+                  </td>
+                  <td>{t.planned_distance} km</td>
+                  <td>{t.estimated_duration_hours} hrs</td>
+                  <td>{new Date(t.created_at).toLocaleDateString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      {showModal && (
+        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Create New Trip (Draft)</h2>
+              <button className="close-btn" onClick={() => setShowModal(false)}>&times;</button>
+            </div>
+            <form onSubmit={handleCreateTrip} className="trip-form">
+              {formError && <div className="error-banner">{formError}</div>}
+              
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Assign Driver</label>
+                  <SearchableSelect 
+                    name="driver_id"
+                    value={formData.driver_id} 
+                    onChange={(val) => setFormData({...formData, driver_id: val})}
+                    options={availableDrivers.map(d => ({
+                      value: d.id,
+                      label: d.name,
+                      sublabel: `License: ${d.license_number} | Run Time: ${d.total_run_time_kms} km`
+                    }))}
+                    placeholder="Search for a driver..."
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Assign Vehicle</label>
+                  <SearchableSelect 
+                    name="vehicle_id"
+                    value={formData.vehicle_id} 
+                    onChange={(val) => setFormData({...formData, vehicle_id: val})}
+                    options={availableVehicles.map(v => ({
+                      value: v.id,
+                      label: `${v.model} (${v.registration_number})`,
+                      sublabel: `Type: ${v.type}`
+                    }))}
+                    placeholder="Search for a vehicle..."
+                  />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Source Location</label>
+                  <input required type="text" name="source" value={formData.source} onChange={handleInputChange} />
+                </div>
+                <div className="form-group">
+                  <label>Destination Location</label>
+                  <input required type="text" name="destination" value={formData.destination} onChange={handleInputChange} />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Cargo Weight (kg)</label>
+                  <input required type="number" name="cargo_weight" value={formData.cargo_weight} onChange={handleInputChange} />
+                </div>
+                <div className="form-group">
+                  <label>Estimated Distance (km)</label>
+                  <input required type="number" name="planned_distance" value={formData.planned_distance} onChange={handleInputChange} />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label>Estimated Duration (hours)</label>
+                <input required type="number" name="estimated_duration_hours" value={formData.estimated_duration_hours} onChange={handleInputChange} step="0.5" />
+              </div>
+
+              <div className="modal-actions">
+                <button type="button" className="btn-secondary" onClick={() => setShowModal(false)}>Cancel</button>
+                <button type="submit" className="btn-primary" disabled={submitting}>
+                  {submitting ? 'Creating...' : 'Create Trip'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

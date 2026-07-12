@@ -27,15 +27,7 @@ const Sidebar: React.FC = () => {
         <NavLink to="/maintenance" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
           Maintenance
         </NavLink>
-        <NavLink to="/fuel" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-          Fuel & Expenses
-        </NavLink>
-        <NavLink to="/analytics" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-          Analytics
-        </NavLink>
-        <NavLink to="/settings" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-          Settings
-        </NavLink>
+
       </nav>
     </aside>
   );

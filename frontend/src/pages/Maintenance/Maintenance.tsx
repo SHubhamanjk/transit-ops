@@ -1,93 +1,207 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { fetchWithAuth } from '../../api/client';
+import { getAvailableVehicles } from '../../api/vehicles';
+import SearchableSelect from '../../components/SearchableSelect/SearchableSelect';
 import './Maintenance.css';
 
-const serviceLogs = [
-  { id: 1, vehicle: 'VAN-05', service: 'Oil Change', cost: '2,500', status: 'In Shop', statusColor: 'amber' },
-  { id: 2, vehicle: 'TRUCK-11', service: 'Engine Repair', cost: '18,000', status: 'Completed', statusColor: 'green' },
-  { id: 3, vehicle: 'MINI-03', service: 'Tyre Replace', cost: '6,200', status: 'In Shop', statusColor: 'amber' },
-];
+const Maintenance = () => {
+  const [activeTab, setActiveTab] = useState<'ACTIVE' | 'COMPLETED' | 'ALL'>('ALL');
+  const [logs, setLogs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  
+  // Modal state
+  const [showModal, setShowModal] = useState(false);
+  const [availableVehicles, setAvailableVehicles] = useState<any[]>([]);
+  
+  const [formData, setFormData] = useState({
+    vehicle_id: '',
+    description: '',
+    start_date: new Date().toISOString().split('T')[0],
+    estimated_duration_hours: 0
+  });
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState('');
 
-const Maintenance: React.FC = () => {
+  const fetchLogs = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      let url = '/maintenance/?skip=0&limit=50';
+      if (activeTab !== 'ALL') {
+        url += `&status=${activeTab}`;
+      }
+      const response = await fetchWithAuth(url);
+      if (!response.ok) throw new Error("Failed to load maintenance logs");
+      setLogs(await response.json());
+    } catch (err: any) {
+      setError(err.message || 'Failed to load maintenance logs');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLogs();
+  }, [activeTab]);
+
+  const openCreateModal = async () => {
+    setShowModal(true);
+    setFormError('');
+    try {
+      const vehicles = await getAvailableVehicles();
+      setAvailableVehicles(vehicles);
+      
+      if (vehicles.length > 0) {
+        setFormData(prev => ({ ...prev, vehicle_id: vehicles[0].id }));
+      }
+    } catch (err: any) {
+      setFormError('Failed to load available vehicles');
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target;
+    setFormData({
+      ...formData,
+      [name]: type === 'number' ? Number(value) : value
+    });
+  };
+
+  const handleCreateMaintenance = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setFormError('');
+    try {
+      const response = await fetchWithAuth('/maintenance/', {
+        method: 'POST',
+        body: JSON.stringify(formData)
+      });
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.detail || "Failed to log maintenance");
+      }
+      
+      setShowModal(false);
+      setFormData({
+        vehicle_id: '', description: '', 
+        start_date: new Date().toISOString().split('T')[0], estimated_duration_hours: 0
+      });
+      fetchLogs();
+    } catch (err: any) {
+      setFormError(err.message || 'Failed to log maintenance');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
-    <div className="maintenance-container">
-      {/* Split Layout */}
-      <div className="maintenance-left">
-        <h3 className="section-title">LOG SERVICE RECORD</h3>
-        <form className="maintenance-form">
-          <div className="form-group">
-            <label>VEHICLE</label>
-            <input type="text" className="form-input" defaultValue="VAN-05" />
-          </div>
-          <div className="form-group">
-            <label>SERVICE TYPE</label>
-            <input type="text" className="form-input" defaultValue="Oil Change" />
-          </div>
-          <div className="form-group">
-            <label>COST</label>
-            <input type="text" className="form-input" defaultValue="2500" />
-          </div>
-          <div className="form-group">
-            <label>DATE</label>
-            <input type="text" className="form-input" defaultValue="07/07/2026" />
-          </div>
-          <div className="form-group">
-            <label>STATUS</label>
-            <select className="form-input">
-              <option>Active</option>
-              <option>Completed</option>
-            </select>
-          </div>
-
-          <button type="button" className="btn-primary w-full mt-4">Save</button>
-        </form>
-
-        <div className="maintenance-legend mt-6">
-          <div className="legend-row">
-            <span className="text-green">Available</span>
-            <div className="legend-arrow-container">
-              <div className="legend-arrow-text">creating active record</div>
-              <div className="legend-arrow">⟶</div>
-            </div>
-            <span className="text-amber">In Shop</span>
-          </div>
-          <div className="legend-row">
-            <span className="text-amber">In Shop</span>
-            <div className="legend-arrow-container">
-              <div className="legend-arrow-text">closing record (or retired)</div>
-              <div className="legend-arrow">⟶</div>
-            </div>
-            <span className="text-green">Available</span>
-          </div>
-          <p className="legend-note mt-4">Note: In Shop vehicles are removed from the dispatch pool.</p>
-        </div>
+    <div className="maintenance-page">
+      <div className="page-header">
+        <h1>Maintenance Logs</h1>
+        <button className="btn-primary" onClick={openCreateModal}>+ Log Maintenance</button>
       </div>
 
-      <div className="maintenance-right">
-        <h3 className="section-title">SERVICE LOG</h3>
-        
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>VEHICLE</th>
-              <th>SERVICE</th>
-              <th>COST</th>
-              <th>STATUS</th>
-            </tr>
-          </thead>
-          <tbody>
-            {serviceLogs.map(log => (
-              <tr key={log.id}>
-                <td>{log.vehicle}</td>
-                <td>{log.service}</td>
-                <td>{log.cost}</td>
-                <td>
-                  <span className={`status-badge bg-${log.statusColor}`}>{log.status}</span>
-                </td>
+      <div className="tabs">
+        {['ALL', 'ACTIVE', 'COMPLETED'].map((tab) => (
+          <button 
+            key={tab} 
+            className={`tab-btn ${activeTab === tab ? 'active' : ''}`}
+            onClick={() => setActiveTab(tab as any)}
+          >
+            {tab === 'ACTIVE' ? 'Pending' : tab === 'COMPLETED' ? 'History' : 'All'}
+          </button>
+        ))}
+      </div>
+
+      {error && <div className="error-banner">{error}</div>}
+
+      <div className="table-container">
+        {loading ? (
+          <div className="loading-state">Loading logs...</div>
+        ) : logs.length === 0 ? (
+          <div className="empty-state">No maintenance records found for this filter.</div>
+        ) : (
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th>Status</th>
+                <th>Start Date</th>
+                <th>Cost (Est)</th>
+                <th>Final Cost</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {logs.map((log) => (
+                <tr key={log.id}>
+                  <td>{log.description}</td>
+                  <td>
+                    <span className={`status-badge status-${log.status.toLowerCase().replace('_', '-')}`}>
+                      {log.status}
+                    </span>
+                  </td>
+                  <td>{new Date(log.start_date).toLocaleDateString()}</td>
+                  <td>${log.estimated_cost}</td>
+                  <td>{log.total_cost ? `$${log.total_cost}` : '-'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
+
+      {showModal && (
+        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Schedule Maintenance</h2>
+              <button className="close-btn" onClick={() => setShowModal(false)}>&times;</button>
+            </div>
+            <form onSubmit={handleCreateMaintenance} className="maintenance-form">
+              {formError && <div className="error-banner">{formError}</div>}
+              
+              <div className="form-group">
+                <label>Select Vehicle</label>
+                <SearchableSelect 
+                  name="vehicle_id"
+                  value={formData.vehicle_id} 
+                  onChange={(val) => setFormData({...formData, vehicle_id: val})}
+                  options={availableVehicles.map(v => ({
+                    value: v.id,
+                    label: `${v.model} (${v.registration_number})`,
+                    sublabel: `Type: ${v.type}`
+                  }))}
+                  placeholder="Search for a vehicle..."
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Issue Description</label>
+                <textarea required name="description" value={formData.description} onChange={handleInputChange} rows={3}></textarea>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Start Date</label>
+                  <input required type="date" name="start_date" value={formData.start_date} onChange={handleInputChange} />
+                </div>
+                <div className="form-group">
+                  <label>Estimated Duration (Hours)</label>
+                  <input required type="number" name="estimated_duration_hours" value={formData.estimated_duration_hours} onChange={handleInputChange} step="0.5" />
+                </div>
+              </div>
+
+              <div className="modal-actions">
+                <button type="button" className="btn-secondary" onClick={() => setShowModal(false)}>Cancel</button>
+                <button type="submit" className="btn-primary" disabled={submitting}>
+                  {submitting ? 'Scheduling...' : 'Schedule Maintenance'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,0 +1,145 @@
+.driver-login-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #f8fafc;
+  padding: 24px;
+}
+
+.driver-login-header {
+  text-align: center;
+  margin-bottom: 48px;
+  margin-top: 24px;
+}
+
+.driver-logo {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+
+.driver-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 8px 0;
+}
+
+.driver-subtitle {
+  color: #64748b;
+  font-size: 16px;
+  margin: 0;
+}
+
+.driver-card {
+  background: white;
+  border-radius: 20px;
+  padding: 32px 24px;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  margin-bottom: 24px;
+}
+
+.driver-input-group {
+  margin-bottom: 24px;
+}
+
+.driver-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 8px;
+}
+
+.driver-input {
+  width: 100%;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  font-size: 16px;
+  background-color: #f8fafc;
+  transition: all 0.2s;
+  box-sizing: border-box;
+}
+
+.driver-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  background-color: white;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.driver-btn {
+  width: 100%;
+  padding: 16px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.driver-btn-primary {
+  background-color: #3b82f6;
+  color: white;
+  box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.4);
+}
+
+.driver-btn-primary:active {
+  transform: translateY(2px);
+}
+
+.driver-btn-primary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.driver-otp-container {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  justify-content: center;
+}
+
+.driver-otp-input {
+  width: 48px;
+  height: 56px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  font-size: 24px;
+  font-weight: 700;
+  text-align: center;
+  background-color: #f8fafc;
+}
+
+.driver-otp-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  background-color: white;
+}
+
+.driver-alert {
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  font-size: 14px;
+}
+
+.driver-alert-error {
+  background-color: #fef2f2;
+  color: #ef4444;
+  border: 1px solid #fee2e2;
+}
+
+.driver-alert-success {
+  background-color: #f0fdf4;
+  color: #22c55e;
+  border: 1px solid #dcfce7;
+}
