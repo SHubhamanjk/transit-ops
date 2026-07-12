@@ -1,4 +1,4 @@
-# TransitOps
+# TransitOps : Smart Transport Operations Platform
 
 TransitOps is a comprehensive Transit and Fleet Management System designed to streamline the operations of logistics and transportation companies. It provides an intuitive interface and robust backend to manage vehicles, drivers, trips, maintenance logs, and financial statistics efficiently.
 
