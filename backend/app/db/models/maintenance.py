@@ -15,9 +15,14 @@ class MaintenanceLog(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     vehicle_id = Column(UUID(as_uuid=True), ForeignKey("vehicles.id", ondelete="CASCADE"), nullable=False, index=True)
     description = Column(Text, nullable=False)
-    cost = Column(Numeric(10, 2), nullable=False)
     start_date = Column(Date, nullable=False)
     end_date = Column(Date, nullable=True)
+    estimated_duration_hours = Column(Numeric(10, 2), nullable=False)
+    actual_duration_hours = Column(Numeric(10, 2), nullable=True)
+    
+    total_cost = Column(Numeric(10, 2), nullable=True)
+    parts_used = Column(Text, nullable=True)
+    mechanic_notes = Column(Text, nullable=True)
     
     status = Column(Enum(MaintenanceStatusEnum), nullable=False, default=MaintenanceStatusEnum.ACTIVE, index=True)
 

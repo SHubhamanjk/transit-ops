@@ -6,5 +6,5 @@ sqlalchemy
 asyncpg
 alembic
 pyjwt
-passlib[bcrypt]
+bcrypt==4.0.1
 email-validator

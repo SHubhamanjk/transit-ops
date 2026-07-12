@@ -14,7 +14,7 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def register(user_in: UserCreate, db: AsyncSession = Depends(get_db)):
-    """Registers a new user (Usually restricted to Fleet Manager, but open for hackathon)."""
+    """Registers a new user"""
     return await services.create_user(db, user_in)
 
 @router.post("/login/initiate")

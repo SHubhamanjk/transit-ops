@@ -12,8 +12,13 @@ class DriverBase(BaseModel):
     license_expiry_date: date
     contact_number: str
 
+from pydantic import EmailStr
+
 class DriverCreate(DriverBase):
     user_id: Optional[UUID] = None
+    create_user_login: bool = False
+    email: Optional[EmailStr] = None
+    password: Optional[str] = None
 
 class DriverUpdate(BaseModel):
     name: Optional[str] = None
@@ -28,8 +33,15 @@ class DriverResponse(DriverBase):
     id: UUID
     user_id: Optional[UUID]
     safety_score: Decimal
+    total_trip_cost: Decimal
     status: DriverStatusEnum
     created_at: datetime
     updated_at: datetime
     
     model_config = ConfigDict(from_attributes=True)
+
+from typing import List
+from app.modules.trips.schemas import TripResponse
+
+class DriverDetailResponse(DriverResponse):
+    trips: List[TripResponse] = []

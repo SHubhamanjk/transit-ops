@@ -23,6 +23,12 @@ class Trip(Base):
     cargo_weight = Column(Numeric(10, 2), nullable=False)
     planned_distance = Column(Numeric(10, 2), nullable=False)
     actual_distance = Column(Numeric(10, 2), nullable=True)
+    estimated_duration_hours = Column(Numeric(10, 2), nullable=False)
+    actual_duration_hours = Column(Numeric(10, 2), nullable=True)
+    
+    fuel_consumed = Column(Numeric(10, 2), nullable=True)
+    completion_notes = Column(String, nullable=True)
+    total_cost = Column(Numeric(10, 2), nullable=True)
     
     status = Column(Enum(TripStatusEnum), nullable=False, default=TripStatusEnum.DRAFT, index=True)
     

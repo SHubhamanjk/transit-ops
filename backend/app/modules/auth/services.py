@@ -26,6 +26,20 @@ async def create_user(db: AsyncSession, user_in: UserCreate) -> User:
     db.add(new_user)
     await db.commit()
     await db.refresh(new_user)
+    
+    if new_user.role == "DRIVER" and user_in.driver_details:
+        from app.db.models.driver import Driver
+        new_driver = Driver(
+            user_id=new_user.id,
+            name=new_user.name,
+            license_number=user_in.driver_details.license_number,
+            license_category=user_in.driver_details.license_category,
+            license_expiry_date=user_in.driver_details.license_expiry_date,
+            contact_number=user_in.driver_details.contact_number
+        )
+        db.add(new_driver)
+        await db.commit()
+        
     return new_user
 
 def generate_otp() -> str:
@@ -51,6 +65,7 @@ async def initiate_login(db: AsyncSession, email: str, password: str):
     email_sent = await send_otp_email(email, otp_code, context="login")
     if not email_sent:
         print("Warning: Email failed to send, but proceeding for dev purposes.")
+    print(f"\n\n{'='*40}\nDEBUG LOGIN OTP for {email}: {otp_code}\n{'='*40}\n\n")
     
     return {"message": "OTP sent to email. Please confirm to login."}
 
@@ -104,6 +119,7 @@ async def forgot_password(db: AsyncSession, email: str):
     await db.commit()
     
     await send_otp_email(email, otp_code, context="forgot_password")
+    print(f"\n\n{'='*40}\nDEBUG FORGOT PASSWORD OTP for {email}: {otp_code}\n{'='*40}\n\n")
     
     return {"message": "If that email exists, an OTP has been sent."}
 

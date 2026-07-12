@@ -5,14 +5,35 @@ from app.db.models.vehicle import Vehicle, VehicleStatusEnum
 from app.modules.vehicles.schemas import VehicleCreate, VehicleUpdate, VehicleStatusUpdate
 from app.services.dashboard_service import recalculate_vehicle_stats
 
-async def get_vehicles(db: AsyncSession, skip: int = 0, limit: int = 10, type_filter: str = None, status_filter: str = None):
+from datetime import datetime
+from sqlalchemy import or_
+
+async def get_vehicles(
+    db: AsyncSession, skip: int = 0, limit: int = 10, type_filter: str = None, status_filter: str = None,
+    search: str = None, created_after: datetime = None, created_before: datetime = None
+):
     query = select(Vehicle)
     if type_filter:
         query = query.where(Vehicle.type == type_filter)
     if status_filter:
         query = query.where(Vehicle.status == status_filter)
         
-    query = query.offset(skip).limit(limit)
+    if search:
+        search_term = f"%{search}%"
+        query = query.where(
+            or_(
+                Vehicle.model.ilike(search_term),
+                Vehicle.registration_number.ilike(search_term),
+                Vehicle.type.ilike(search_term)
+            )
+        )
+        
+    if created_after:
+        query = query.where(Vehicle.created_at >= created_after)
+    if created_before:
+        query = query.where(Vehicle.created_at <= created_before)
+        
+    query = query.offset(skip).limit(limit).order_by(Vehicle.created_at.desc())
     result = await db.execute(query)
     return result.scalars().all()
 
@@ -22,6 +43,17 @@ async def get_vehicle_by_id(db: AsyncSession, vehicle_id: str):
     vehicle = result.scalars().first()
     if not vehicle:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Vehicle not found")
+        
+    from app.db.models.trip import Trip
+    trip_query = select(Trip).where(Trip.vehicle_id == vehicle_id).order_by(Trip.created_at.desc())
+    trip_result = await db.execute(trip_query)
+    vehicle.trips = trip_result.scalars().all()
+    
+    from app.db.models.maintenance import MaintenanceLog
+    maint_query = select(MaintenanceLog).where(MaintenanceLog.vehicle_id == vehicle_id).order_by(MaintenanceLog.created_at.desc())
+    maint_result = await db.execute(maint_query)
+    vehicle.maintenance_logs = maint_result.scalars().all()
+    
     return vehicle
 
 async def create_vehicle(db: AsyncSession, vehicle_in: VehicleCreate, background_tasks: BackgroundTasks):

@@ -9,6 +9,7 @@ class ExpenseTypeEnum(str, enum.Enum):
     FUEL = "FUEL"
     MAINTENANCE = "MAINTENANCE"
     TOLL = "TOLL"
+    TRIP_COST = "TRIP_COST"
     OTHER = "OTHER"
 
 class Expense(Base):
