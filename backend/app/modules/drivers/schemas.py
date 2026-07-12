@@ -41,6 +41,7 @@ class DriverDropdownResponse(BaseModel):
     id: UUID
     name: str
     license_number: str
+    total_run_time_kms: Decimal
     created_at: datetime
     updated_at: datetime
     

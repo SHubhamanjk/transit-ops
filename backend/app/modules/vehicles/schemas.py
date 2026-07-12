@@ -47,7 +47,7 @@ class VehicleDetailResponse(VehicleResponse):
 
 class VehicleDropdownResponse(BaseModel):
     id: UUID
-    license_plate: str
-    make: str
+    registration_number: str
     model: str
+    type: str
     maintenance_logs: List[MaintenanceResponse] = []

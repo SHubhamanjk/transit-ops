@@ -9,7 +9,7 @@ from datetime import datetime
 from sqlalchemy import or_
 
 async def get_available_vehicles_dropdown(db: AsyncSession):
-    query = select(Vehicle).where(Vehicle.status == VehicleStatusEnum.AVAILABLE).order_by(Vehicle.license_plate)
+    query = select(Vehicle).where(Vehicle.status == VehicleStatusEnum.AVAILABLE).order_by(Vehicle.registration_number)
     result = await db.execute(query)
     return result.scalars().all()
 
